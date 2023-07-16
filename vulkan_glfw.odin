@@ -4,6 +4,7 @@ import "core:fmt"
 import "vendor:glfw"
 import glm "core:math/linalg/glsl"
 import vk "vendor:vulkan"
+import "core:strings"
 
 
 WIDTH   :: 1600
@@ -22,13 +23,23 @@ check_ValidationLayerSupport :: proc() -> b32 {
     layerCount : u32
     vk.EnumerateInstanceLayerProperties(&layerCount, nil)
     availableLayers := make([]vk.LayerProperties, layerCount)
-    vk.EnumerateInstanceLayerProperties(&layerCount, raw_data([]vk.LayerProperties))
+    vk.EnumerateInstanceLayerProperties(&layerCount, raw_data(availableLayers))
+
+    compare_strings :: proc(layerProperties : vk.LayerProperties, validation_string : cstring) -> bool {
+        bytes : [256]u8 = layerProperties.layerName
+        builder := strings.clone_from_bytes(bytes[:])
+        cbuilder := strings.clone_to_cstring(builder)
+        return cbuilder == validation_string
+    }
 
     for layerName in validationLayers {
         layerFound := false
 
         for layerProperties in availableLayers {
-            if layerName == layerProperties.layerName
+            // Cannot directly slice from "layerProperties.layerName
+            if compare_strings(layerProperties, layerName) == true do return true
+        }
+    }
     return false
 }
 
@@ -56,6 +67,8 @@ initWindow :: proc() {
 
 initVulkan :: proc() {
     createInstance()
+    is_supported := check_ValidationLayerSupport()
+    if is_supported do fmt.println("Yes")
 }
 
 
