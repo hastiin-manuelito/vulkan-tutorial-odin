@@ -11,12 +11,18 @@ WIDTH   :: 1600
 HEIGHT  :: 900
 TITLE   :: "Vulkan Window!"
 
+QueueError :: enum {
+    None,
+    NoGraphicsBit,
+}
+
+
 validationLayers := []cstring{"VK_LAYER_KHRONOS_validation"}
 
 when ODIN_DEBUG {
-    enabledValidationLayers := false
-} else {
     enabledValidationLayers := true
+} else {
+    enabledValidationLayers := false
 }
 
 check_ValidationLayerSupport :: proc() -> b32 {
@@ -26,6 +32,7 @@ check_ValidationLayerSupport :: proc() -> b32 {
     vk.EnumerateInstanceLayerProperties(&layerCount, raw_data(availableLayers))
 
     compare_strings :: proc(layerProperties : vk.LayerProperties, validation_string : cstring) -> bool {
+        // Cannot directly slice from "layerProperties.layerName
         bytes : [256]u8 = layerProperties.layerName
         builder := strings.clone_from_bytes(bytes[:])
         cbuilder := strings.clone_to_cstring(builder)
@@ -36,7 +43,6 @@ check_ValidationLayerSupport :: proc() -> b32 {
         layerFound := false
 
         for layerProperties in availableLayers {
-            // Cannot directly slice from "layerProperties.layerName
             if compare_strings(layerProperties, layerName) == true do return true
         }
     }
@@ -46,6 +52,7 @@ check_ValidationLayerSupport :: proc() -> b32 {
 // Globals
 window : glfw.WindowHandle
 instance : vk.Instance
+device : vk.Device
 
 
 initWindow :: proc() {
@@ -67,14 +74,15 @@ initWindow :: proc() {
 
 initVulkan :: proc() {
     createInstance()
-    is_supported := check_ValidationLayerSupport()
-    if is_supported do fmt.println("Yes")
+    pickPhysicalDevice()
 }
 
 
 createInstance :: proc() {
-    fmt.println("Made it here")
     vk.load_proc_addresses(rawptr(glfw.GetInstanceProcAddress))
+    if enabledValidationLayers && !check_ValidationLayerSupport() {
+        fmt.eprintln("validation layers requested but not available")
+    }
 
     appInfo : vk.ApplicationInfo
     appInfo.sType = vk.StructureType.APPLICATION_INFO
@@ -109,14 +117,104 @@ createInstance :: proc() {
     vk.EnumerateInstanceExtensionProperties(nil, &extCount, nil)
     extensionProps := make([]vk.ExtensionProperties, extCount)
     vk.EnumerateInstanceExtensionProperties(nil, &extCount, raw_data(extensionProps))
-    fmt.println("available extensions:\n")
-    for ext in extensionProps {
-        for c in ext.extensionName {
-            fmt.printf("%c", c)
-        }
-        fmt.println()
+
+    // fmt.println("Number of validation layers: ", len(validationLayers))
+
+    if enabledValidationLayers {
+        createInfo.enabledLayerCount = u32(len(validationLayers))
+        createInfo.ppEnabledLayerNames = raw_data(validationLayers)
+    } else {
+        createInfo.enabledLayerCount = 0
     }
-    fmt.println(extCount)
+}
+
+
+pickPhysicalDevice :: proc() {
+    devCount : u32 = 0
+    vk.EnumeratePhysicalDevices(instance, &devCount, nil);
+
+    if devCount == 0 {
+        fmt.eprintln("failed to find GPUs with Vulkan support!")
+    }
+
+    physicalDevices := make([]vk.PhysicalDevice, devCount)
+    physicalDevices_raw := raw_data(physicalDevices)
+    vk.EnumeratePhysicalDevices(instance, &devCount, physicalDevices_raw);
+
+
+    isDeviceSuitable :: proc(device: vk.PhysicalDevice) -> b32 {
+        _, err := findQueueFamilies(device)
+        if err != nil {
+            fmt.eprintln("Triggered an error:", err)
+            return false
+        }
+        return true
+    }
+
+
+    findQueueFamilies :: proc(physicalDevice : vk.PhysicalDevice) -> (index : int, err : QueueError) {
+        queueFamilyCount : u32 = 0
+        vk.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, nil);
+
+        queueFamilies := make([]vk.QueueFamilyProperties, queueFamilyCount)
+        queueFamiliesRaw := raw_data(queueFamilies)
+        vk.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, queueFamiliesRaw);
+
+        i : int = 0
+        for queueFamily in queueFamilies {
+            if .GRAPHICS in queueFamily.queueFlags {
+                index = i;
+                return index, .None
+            }
+            i += 1
+        }
+        return index, .NoGraphicsBit
+    }
+
+    index : int
+    for i in 0..<devCount {
+        if isDeviceSuitable(physicalDevices[i]) {
+            fmt.println("[LOG] A suitable device was found.")
+            index = int(i)
+            break;
+        }
+    }
+
+    if physicalDevices == nil {
+        fmt.eprintln("failed to find a suitable GPU!")
+    }
+
+    createLogicalDevice :: proc(index: int, physicalDevices : []vk.PhysicalDevice) {
+        queueCreateInfo : vk.DeviceQueueCreateInfo
+        queueCreateInfo.sType = vk.StructureType.DEVICE_QUEUE_CREATE_INFO
+        queueCreateInfo.queueFamilyIndex = u32(index)
+        queueCreateInfo.queueCount = 1
+        queuePriority : f32 = 1.0
+        queueCreateInfo.pQueuePriorities = &queuePriority
+
+        deviceFeatures : vk.PhysicalDeviceFeatures
+        createInfo : vk.DeviceCreateInfo
+        createInfo.sType = vk.StructureType.DEVICE_CREATE_INFO
+        createInfo.pQueueCreateInfos = &queueCreateInfo
+        createInfo.queueCreateInfoCount = 1;
+
+        createInfo.pEnabledFeatures = &deviceFeatures
+        createInfo.enabledExtensionCount = 0;
+
+        if enabledValidationLayers {
+            createInfo.enabledLayerCount = u32(len(validationLayers))
+            createInfo.ppEnabledLayerNames = raw_data(validationLayers)
+        } else {
+            createInfo.enabledLayerCount = 0
+        }
+        if vk.CreateDevice(physicalDevices[index], &createInfo, nil, &device) != vk.Result.SUCCESS {
+            fmt.eprintln("Failed to create logical device!")
+        } else {
+            fmt.println("[LOG] found a logic device")
+        }
+    }
+
+    createLogicalDevice(index, physicalDevices)
 }
 
 
@@ -128,6 +226,7 @@ mainLoop :: proc() {
 
 
 cleanup :: proc() {
+    vk.DestroyDevice(device, nil)
     vk.DestroyInstance(instance, nil)
     glfw.DestroyWindow(window)
     glfw.Terminate()
