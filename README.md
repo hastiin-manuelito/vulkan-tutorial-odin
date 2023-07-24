@@ -1,6 +1,6 @@
-### Chapter-0
+## Chapter-0
 
-## Set up environment
+### Set up environment
 
 If you like using an IDE please go here: https://vulkan-tutorial.com/Development_environment to set it up.
 
@@ -10,10 +10,10 @@ In Odin we only need to import the vulkan bindings, they must be installed of co
 
 We will be using glfw3, available in the vendor libraries.
 
-## Create initialize glfw
+### Create initialize glfw
 
 This is fairly striaghtforward
 
 
-### Chapter-1
-### Chapter-2
+## Chapter-1
+## Chapter-2
