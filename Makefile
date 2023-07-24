@@ -2,7 +2,7 @@
 
 
 VulkanTest: vulkan_glfw.odin compileShader
-	odin build vulkan_glfw.odin -file -out:VulkanTest
+	odin build vulkan_glfw.odin -file -out:VulkanTest -debug
 
 .PHONY: test clean compile
 
