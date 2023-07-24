@@ -53,6 +53,7 @@ check_ValidationLayerSupport :: proc() -> b32 {
 window : glfw.WindowHandle
 instance : vk.Instance
 device : vk.Device
+graphicsQueue : vk.Queue
 
 
 initWindow :: proc() {
@@ -212,6 +213,8 @@ pickPhysicalDevice :: proc() {
         } else {
             fmt.println("[LOG] found a logic device")
         }
+
+        vk.GetDeviceQueue(device, u32(index), 0, &graphicsQueue)
     }
 
     createLogicalDevice(index, physicalDevices)
