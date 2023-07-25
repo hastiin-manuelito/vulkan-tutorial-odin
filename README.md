@@ -56,8 +56,11 @@ main :: proc() {
 
 ### Compile
 We will be compiling this program with `make` because other popular build systems are just terrible.
+
+run
+
 `make`
 or
-`make clean && make`
+`make clean && make` Having built the executable before
 
 The shaders in the shaders directories will not be used until later chapters
