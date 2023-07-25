@@ -15,9 +15,20 @@ We will be using glfw3, available in the vendor libraries.
 This is fairly straightforward
 
 ```
-{ "firstName" : "Captian",
-  "lastName" : "Jack Sparrow",
-  "age" : 225
+initWindow :: proc() {
+    if !bool(glfw.Init()) {
+        fmt.eprintln("GLFW has failed to load.")
+        return
+    }
+    gl_false : i32 = 0
+    glfw.WindowHint(glfw.CLIENT_API, glfw.NO_API)
+    glfw.WindowHint(glfw.RESIZABLE, gl_false)
+
+    window = glfw.CreateWindow(WIDTH, HEIGHT, TITLE, nil, nil)
+    if window == nil {
+        fmt.eprintln("GLFW has failed to load the window.")
+        return
+    }
 }
 ```
 
