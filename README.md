@@ -1,14 +1,16 @@
-## Chapter-0
+## Chapter 0
 
 In Odin we only need to import the vulkan libraries (it pretty much just works), they must be installed of course (see above). For this tutorial we don't need to worry about linking any libraries. The code herein does not attempt to mirror conventional Odin style, that is the style that comes up naturally having worked with Odin for a significant amount of time. This code is semantically and syntactically correct as it does compile.
 
+The tutorial is broken up into chapters. Each chapter will have its own branch.
+
 ### Set up environment
 
-This tutorial is ported directly from [this tutorial](https://vulkan-tutorial.com).
+This tutorial is ported directly from [here](https://vulkan-tutorial.com).
 
 If you like using an IDE please go here: https://vulkan-tutorial.com/Development_environment to set it up.
 
-It is recommended to use the LunarG SDK, available here: https://vulkan.lunarg.com/
+It is recommended to use the LunarG SDK, available here: https://vulkan.lunarg.com/. The SDK provides validation layers that people really like (I guess).
 
 
 ### Initialize glfw
@@ -52,10 +54,10 @@ main :: proc() {
 }
 ```
 
-## Chapter-1
-## Chapter-2
+### Compile
+We will be compiling this program with `make` because other popular build systems are just terrible.
+`make`
+or
+`make clean && make`
 
-| column one | column two |
-| ---------- | ---------- |
-| 0 | 1 |
-| 2 | 3 |
+The shaders in the shaders directories will not be used until later chapters
