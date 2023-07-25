@@ -14,6 +14,12 @@ We will be using glfw3, available in the vendor libraries.
 
 This is fairly straightforward
 
+```
+{ "firstName" : "Captian",
+  "lastName" : "Jack Sparrow",
+  "age" : 225
+}
+```
 
 ## Chapter-1
 ## Chapter-2
