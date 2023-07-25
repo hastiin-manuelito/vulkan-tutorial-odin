@@ -19,5 +19,6 @@ This is fairly straightforward
 ## Chapter-2
 
 | column one | column two |
+| ---------- | ---------- |
 | 0 | 1 |
 | 2 | 3 |
