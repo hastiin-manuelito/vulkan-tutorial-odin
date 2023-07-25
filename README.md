@@ -14,7 +14,7 @@ We will be using glfw3, available in the vendor libraries.
 
 This is fairly straightforward
 
-```
+```odin
 initWindow :: proc() {
     if !bool(glfw.Init()) {
         fmt.eprintln("GLFW has failed to load.")
