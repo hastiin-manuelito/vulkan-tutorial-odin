@@ -2,13 +2,14 @@
 
 ### Set up environment
 
+This tutorial is ported directly from [this tutorial](https://vulkan-tutorial.com)
 If you like using an IDE please go here: https://vulkan-tutorial.com/Development_environment to set it up.
 
 It is recommended to use the LunarG SDK, available here: https://vulkan.lunarg.com/
 
-In Odin we only need to import the vulkan libraries (it pretty much just works), they must be installed of course (see above). For this tutorial we don't need to worry about linking any libraries.
+In Odin we only need to import the vulkan libraries (it pretty much just works), they must be installed of course (see above). For this tutorial we don't need to worry about linking any libraries. The code herein does not attempt to mirror conventional Odin style, that is the style that comes up naturally having worked with Odin for a significant amount of time. This code is semantically and syntactically correct as it does compile.
 
-We will be using glfw3, available in the vendor libraries.
+glfw3 will be used to initialize the window.
 
 ### Initialize glfw
 
