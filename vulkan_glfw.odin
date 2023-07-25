@@ -2,28 +2,32 @@ package main
 
 import "core:fmt"
 import "vendor:glfw"
-import glm "core:math/linalg/glsl"
 import vk "vendor:vulkan"
 import "core:strings"
-
-
-WIDTH   :: 1600
-HEIGHT  :: 900
-TITLE   :: "Vulkan Window!"
-
-QueueError :: enum {
-    None,
-    NoGraphicsBit,
-}
-
-
-validationLayers := []cstring{"VK_LAYER_KHRONOS_validation"}
 
 when ODIN_DEBUG {
     enabledValidationLayers := true
 } else {
     enabledValidationLayers := false
 }
+
+WIDTH   :: 1600
+HEIGHT  :: 900
+TITLE   :: "Vulkan Window!"
+
+// Globals
+window : glfw.WindowHandle
+instance : vk.Instance
+device : vk.Device
+graphicsQueue : vk.Queue
+
+QueueError :: enum {
+    None,
+    NoGraphicsBit,
+}
+
+validationLayers := []cstring{"VK_LAYER_KHRONOS_validation"}
+
 
 check_ValidationLayerSupport :: proc() -> b32 {
     layerCount : u32
@@ -48,13 +52,6 @@ check_ValidationLayerSupport :: proc() -> b32 {
     }
     return false
 }
-
-// Globals
-window : glfw.WindowHandle
-instance : vk.Instance
-device : vk.Device
-graphicsQueue : vk.Queue
-
 
 initWindow :: proc() {
     if !bool(glfw.Init()) {
